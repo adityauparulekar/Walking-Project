@@ -8,8 +8,8 @@ SCREEN_HEIGHT = 800
 
 
 class PhysicsSprite(arcade.Sprite):
-    def __init__(self, pymunk_shape, filename):
-        super().__init__(filename, center_x=pymunk_shape.body.position.x, center_y=pymunk_shape.body.position.y)
+    def __init__(self, pymunk_shape, filename, sprite_scaling):
+        super().__init__(filename, sprite_scaling, center_x=pymunk_shape.body.position.x, center_y=pymunk_shape.body.position.y)
         self.pymunk_shape = pymunk_shape
 
 
@@ -33,7 +33,7 @@ class MyGame(arcade.Window):
         self.processing_time = 0
 
         # Create the floor
-        floor_height = 150
+        floor_height = 100
         floor_body = pymunk.Body(body_type=pymunk.Body.STATIC)
         floor_shape = pymunk.Segment(floor_body, [0, floor_height], [SCREEN_WIDTH, floor_height], 0.0)
         floor_shape.friction = 10
@@ -53,26 +53,26 @@ class MyGame(arcade.Window):
         torso_moment = pymunk.moment_for_segment(torso_mass, (0, 0), (0, torso_length), 3)
         torso_body = pymunk.Body(torso_mass, torso_moment)
         torso_body.position = pymunk.Vec2d(300, 500)
-        torso_shape = pymunk.Segment(torso_body, (10, floor_height+150), (10, floor_height+200), 3)
+        torso_shape = pymunk.Poly.create_box(torso_body, (10, 100))
         self.space.add(torso_body, torso_shape)
-        torso_sprite = PhysicsSprite(torso_shape, "torso.png")
+        torso_sprite = PhysicsSprite(torso_shape, "torso.png", 1)
         self.sprite_list.append(torso_sprite)
 
         #thigh
         thigh_moment = pymunk.moment_for_segment(thigh_mass, (0, 0), (0, thigh_length), 3)
 
         l_thigh_body = pymunk.Body(thigh_mass, thigh_moment)
-        l_thigh_body.position = pymunk.Vec2d(400, 300)
-        l_thigh_shape = pymunk.Segment(l_thigh_body, (10, floor_height+125), (10, floor_height+150), 3)
+        l_thigh_body.position = pymunk.Vec2d(300, 300)
+        l_thigh_shape = pymunk.Poly.create_box(l_thigh_body, (10, 100))
         self.space.add(l_thigh_body, l_thigh_shape)
-        l_thigh_sprite = PhysicsSprite(l_thigh_shape, "torso.png")
+        l_thigh_sprite = PhysicsSprite(l_thigh_shape, "torso.png", 0.5)
         self.sprite_list.append(l_thigh_sprite)
 
         r_thigh_body = pymunk.Body(thigh_mass, thigh_moment)
-        r_thigh_body.position = pymunk.Vec2d(500, 300)
-        r_thigh_shape = pymunk.Segment(r_thigh_body, (10, floor_height+125), (10, floor_height+150), 3)
+        r_thigh_body.position = pymunk.Vec2d(300, 300)
+        r_thigh_shape = pymunk.Poly.create_box(r_thigh_body, (10, 100))
         self.space.add(r_thigh_body, r_thigh_shape)
-        r_thigh_sprite = PhysicsSprite(r_thigh_shape, "torso.png")
+        r_thigh_sprite = PhysicsSprite(r_thigh_shape, "torso.png", 0.5)
         self.sprite_list.append(r_thigh_sprite)
 
         #j = pymunk.PinJoint(l_thigh_body, torso_body)
@@ -96,7 +96,6 @@ class MyGame(arcade.Window):
         # Draw the lines that aren't sprites
         for line in self.static_lines:
             body = line.body
-
             pv1 = body.position + line.a.rotated(body.angle)
             pv2 = body.position + line.b.rotated(body.angle)
             arcade.draw_line(pv1.x, pv1.y, pv2.x, pv2.y, arcade.color.WHITE, 2)
@@ -127,6 +126,7 @@ class MyGame(arcade.Window):
             sprite.center_x = sprite.pymunk_shape.body.position.x
             sprite.center_y = sprite.pymunk_shape.body.position.y
             sprite.angle = math.degrees(sprite.pymunk_shape.body.angle)
+            print(sprite.center_y)
 
         # Save the time it took to do this.
         self.processing_time = timeit.default_timer() - start_time
