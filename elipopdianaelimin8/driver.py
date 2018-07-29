@@ -2,7 +2,6 @@ import arcade
 import pymunk
 import timeit
 import math
-import os
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
@@ -19,13 +18,6 @@ class MyGame(arcade.Window):
 
     def __init__(self, width, height):
         super().__init__(width, height)
-
-        # Set the working directory (where we expect to find files) to the same
-        # directory this .py file is in. You can leave this out of your own
-        # code, but it is needed to easily run the examples using "python -m"
-        # as mentioned at the top of this program.
-        file_path = os.path.dirname(os.path.abspath(__file__))
-        os.chdir(file_path)
 
         arcade.set_background_color(arcade.color.DARK_SLATE_GRAY)
 
@@ -60,8 +52,9 @@ class MyGame(arcade.Window):
         #torso
         torso_moment = pymunk.moment_for_segment(torso_mass, (0, 0), (0, torso_length), 3)
         torso_body = pymunk.Body(torso_mass, torso_moment)
-        torso_shape = pymunk.Segment(torso_body, [10, floor_height+150], [10, floor_height+200], 3)
-        self.space.add(torso_shape)
+        torso_body.position = pymunk.Vec2d(300, 500)
+        torso_shape = pymunk.Segment(torso_body, (10, floor_height+150), (10, floor_height+200), 3)
+        self.space.add(torso_body, torso_shape)
         torso_sprite = PhysicsSprite(torso_shape, "torso.png")
         self.sprite_list.append(torso_sprite)
 
@@ -69,19 +62,21 @@ class MyGame(arcade.Window):
         thigh_moment = pymunk.moment_for_segment(thigh_mass, (0, 0), (0, thigh_length), 3)
 
         l_thigh_body = pymunk.Body(thigh_mass, thigh_moment)
-        l_thigh_shape = pymunk.Segment(l_thigh_body, [10, floor_height+125], [10, floor_height+150], 3)
-        self.space.add(l_thigh_shape)
+        l_thigh_body.position = pymunk.Vec2d(400, 300)
+        l_thigh_shape = pymunk.Segment(l_thigh_body, (10, floor_height+125), (10, floor_height+150), 3)
+        self.space.add(l_thigh_body, l_thigh_shape)
         l_thigh_sprite = PhysicsSprite(l_thigh_shape, "torso.png")
         self.sprite_list.append(l_thigh_sprite)
 
         r_thigh_body = pymunk.Body(thigh_mass, thigh_moment)
-        r_thigh_shape = pymunk.Segment(r_thigh_body, [10, floor_height+125], [10, floor_height+150], 3)
-        self.space.add(r_thigh_shape)
+        r_thigh_body.position = pymunk.Vec2d(500, 300)
+        r_thigh_shape = pymunk.Segment(r_thigh_body, (10, floor_height+125), (10, floor_height+150), 3)
+        self.space.add(r_thigh_body, r_thigh_shape)
         r_thigh_sprite = PhysicsSprite(r_thigh_shape, "torso.png")
         self.sprite_list.append(r_thigh_sprite)
 
-        j = pymunk.PinJoint(l_thigh_body, torso_body)
-        self.space.add(j)
+        #j = pymunk.PinJoint(l_thigh_body, torso_body)
+        #self.space.add(j)
 
 
     def on_draw(self):
@@ -125,6 +120,7 @@ class MyGame(arcade.Window):
         # See "Game loop / moving time forward"
         # http://www.pymunk.org/en/latest/overview.html#game-loop-moving-time-forward
         self.space.step(1 / 60.0)
+
 
         # Move sprites to where physics objects are
         for sprite in self.sprite_list:
