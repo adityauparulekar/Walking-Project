@@ -28,23 +28,14 @@ class MyGame(arcade.Window):
 
     def update(self, delta_time):
 
-class my_person(self):
+class Person():
     def __init__(self, dna):
         self.dna = dna
 
-        self.torso = arcade.Sprite("torso.png", SPRITE_TORSO_SCALING)
-        self.right_femur = arcade.Sprite("torso.png", SPRITE_FEMUR_SCALING)
-        self.left_femur = arcade.Sprite("torso.png", SPRITE_FEMUR_SCALING)
-        self.right_calf = arcade.Sprite("torso.png", SPRITE_CALF_SCALING)
-        self.left_calf = arcade.Sprite("torso.png", SPRITE_CALF_SCALING)
-        self.right_foot = arcade.Sprite("torso.png", SPRITE_FOOT_SCALING)
-        self.left_foot = arcade.Sprite("torso.png", SPRITE_FOOT_SCALING)
+        torso_shape =
+        self.torso = Body_parts("torso.png", )
 
-        self.head = arcade.Sprite("circle.png", SPRITE_JOINT_SCALING)
-        self.hip = arcade.Sprite("circle.png", SPRITE_JOINT_SCALING)
-        self.right_knee = arcade.Sprite("circle.png", SPRITE_JOINT_SCALING)
-        self.left_knee = arcade.Sprite("circle.png", SPRITE_JOINT_SCALING)
-        self.right_ankle = arcade.Sprite("circle.png", SPRITE_JOINT_SCALING)
-        self.left_ankle = arcade.Sprite("circle.png", SPRITE_JOINT_SCALING)
-
-        self.torso.center_x = 
+class Body_parts(arcade.Sprite):
+    def __init__(self, filename, pymunk_shape):
+        super().__init__(filename, center_x=pymunk_shape.body.position.x, center=pymunk_shape.body.position.y)
+        self.pymunk_shape = pymunk_shape
