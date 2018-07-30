@@ -9,7 +9,7 @@ TORSO_SCALING = 1
 GRAVITY = -1
 RESTITUTION = 0
 
-TORSO_LENGTH = 267
+TORSO_HEIGHT = 267
 TORSO_WIDTH = 23
 class BoxSprite(arcade.Sprite):
     def __init__(self, filename):
@@ -23,7 +23,7 @@ class BoxSprite(arcade.Sprite):
         self.impulse = 0
         self.angle = 0
         self.mass = 10
-        self.length = TORSO_SCALING*TORSO_LENGTH
+        self.length = TORSO_SCALING*TORSO_HEIGHT
         self.width = TORSO_SCALING*TORSO_WIDTH
         self.moment = self.mass*self.length*self.length / 12
         self.top_coords = [0,0]
@@ -68,37 +68,15 @@ class MyGame(arcade.Window):
         self.sprite_list.update()
 
         for sprite in self.sprite_list:
-            """
-            if sprite.bottom <= 0:
-                sprite.y_force = 0
-                sprite.torque += sprite.mass * GRAVITY * sprite.length / 2 * math.cos(math.radians(sprite.angle))
-                #print(sprite.torque)
-
-                if sprite.angle < 91 and sprite.angle > 89:
-                    sprite.torque = 0
-                    sprite.angular_vel = 0
-                    sprite.angle = 90
-                if sprite.angle < 271 and sprite.angle > 269:
-                    sprite.torque = 0
-                    sprite.angular_vel = 0
-                    sprite.angle = 270
-            #if sprite.top <= 40:
-                #sprite.y_force = 0
-                #sprite.torque -= sprite.mass * GRAVITY * sprite.length / 2 * math.cos(math.radians(sprite.angle))
-            """
-
             if sprite.bottom_coords[1] <= 0:
-                sprite.y_force
+                imp_x = sprite.x_vel + (sprite.length * sprite.angular_vel * math.sin(math.radians(sprite.angle)) / 2)
+                imp_y = sprite.y_vel + (sprite.length * sprite.angular_vel * math.cos(math.radians(sprite.angle)) / 2)
+                sprite.x_vel -= imp_x
+                sprite.y_vel -= imp_y
+                sprite.y_force -= sprite.mass*GRAVITY
             sprite.y_vel += sprite.y_force/sprite.mass
             sprite.x_vel += sprite.x_force/sprite.mass
             sprite.angular_vel -= sprite.torque/sprite.moment
-            #print(sprite.angular_vel)
-            #print(sprite.angle)
-            #print(sprite.torque)
-            #print("")
-        def collide_with_floor(sprite):
-            if sprite.bottom_coords[1] <= 0 or sprite.top_coords[1] <= 12:
-                return True
 
 def main():
     game = MyGame()
