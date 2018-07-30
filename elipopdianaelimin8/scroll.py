@@ -20,15 +20,14 @@ class BoxSprite(arcade.Sprite):
         self.y_force = 0
         self.torque = 0
         self.angular_vel = 0
+        self.impulse = 0
         self.angle = 0
         self.mass = 10
         self.length = TORSO_SCALING*TORSO_LENGTH
         self.width = TORSO_SCALING*TORSO_WIDTH
         self.moment = self.mass*self.length*self.length / 12
-        self.top_right = [0,0]
-        self.top_left = [0,0]
-        self.bottom_right = [0,0]
-        self.bottom_left = [0,0]
+        self.top_coords = [0,0]
+        self.bottom_coords = [0,0]
 
     def update(self):
         self.center_x += self.x_vel
@@ -37,8 +36,10 @@ class BoxSprite(arcade.Sprite):
 
         if self.bottom <= -1:
             self.bottom = 0
-
-
+        self.top_coords = [self.center_x - (TORSO_HEIGHT*TORSO_SCALING*0.5*math.sin(math.radians(self.angle)))
+                            , self.center_y + (TORSO_HEIGHT*TORSO_SCALING*0.5*math.cos(math.radians(self.angle)))]
+        self.bottom_coords = [self.center_x + (TORSO_HEIGHT*TORSO_SCALING*0.5*math.sin(math.radians(self.angle)))
+                            , self.center_y - (TORSO_HEIGHT*TORSO_SCALING*0.5*math.cos(math.radians(self.angle)))]
 
 class MyGame(arcade.Window):
     def __init__(self):
@@ -67,10 +68,12 @@ class MyGame(arcade.Window):
         self.sprite_list.update()
 
         for sprite in self.sprite_list:
+            """
             if sprite.bottom <= 0:
                 sprite.y_force = 0
                 sprite.torque += sprite.mass * GRAVITY * sprite.length / 2 * math.cos(math.radians(sprite.angle))
                 #print(sprite.torque)
+
                 if sprite.angle < 91 and sprite.angle > 89:
                     sprite.torque = 0
                     sprite.angular_vel = 0
@@ -79,6 +82,13 @@ class MyGame(arcade.Window):
                     sprite.torque = 0
                     sprite.angular_vel = 0
                     sprite.angle = 270
+            #if sprite.top <= 40:
+                #sprite.y_force = 0
+                #sprite.torque -= sprite.mass * GRAVITY * sprite.length / 2 * math.cos(math.radians(sprite.angle))
+            """
+
+            if sprite.bottom_coords[1] <= 0:
+                sprite.y_force
             sprite.y_vel += sprite.y_force/sprite.mass
             sprite.x_vel += sprite.x_force/sprite.mass
             sprite.angular_vel -= sprite.torque/sprite.moment
@@ -86,7 +96,9 @@ class MyGame(arcade.Window):
             #print(sprite.angle)
             #print(sprite.torque)
             #print("")
-
+        def collide_with_floor(sprite):
+            if sprite.bottom_coords[1] <= 0 or sprite.top_coords[1] <= 12:
+                return True
 
 def main():
     game = MyGame()
