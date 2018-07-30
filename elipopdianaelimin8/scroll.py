@@ -1,162 +1,99 @@
-import random
 import arcade
-import os
-
-SPRITE_SCALING = 0.4
+import pymunk
+import math
 
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_HEIGHT = 800
 
-# How many pixels to keep as a minimum margin between the character
-# and the edge of the screen.
-VIEWPORT_MARGIN = 40
+TORSO_SCALING = 1
+GRAVITY = -1
+RESTITUTION = 0
 
-MOVEMENT_SPEED = 5
+TORSO_LENGTH = 267
+TORSO_WIDTH = 23
+class BoxSprite(arcade.Sprite):
+    def __init__(self, filename):
+        super().__init__(filename, TORSO_SCALING)
+        self.x_vel = 0
+        self.y_vel = 0
+        self.x_force = 0
+        self.y_force = 0
+        self.torque = 0
+        self.angular_vel = 0
+        self.angle = 0
+        self.mass = 10
+        self.length = TORSO_SCALING*TORSO_LENGTH
+        self.width = TORSO_SCALING*TORSO_WIDTH
+        self.moment = self.mass*self.length*self.length / 12
+        self.top_right = [0,0]
+        self.top_left = [0,0]
+        self.bottom_right = [0,0]
+        self.bottom_left = [0,0]
+
+    def update(self):
+        self.center_x += self.x_vel
+        self.center_y += self.y_vel
+        self.angle += self.angular_vel
+
+        if self.bottom <= -1:
+            self.bottom = 0
+
 
 
 class MyGame(arcade.Window):
-    """ Main application class. """
-
-    def __init__(self, width, height):
-        """
-        Initializer
-        """
-        super().__init__(width, height)
-
-        # Set the working directory (where we expect to find files) to the same
-        # directory this .py file is in. You can leave this out of your own
-        # code, but it is needed to easily run the examples using "python -m"
-        # as mentioned at the top of this program.
-        file_path = os.path.dirname(os.path.abspath(__file__))
-        os.chdir(file_path)
-
-        # Sprite lists
-        self.player_list = None
-        self.coin_list = None
-
-        # Set up the player
-        self.score = 0
-        self.player_sprite = None
-        self.wall_list = None
-        self.physics_engine = None
-        self.view_bottom = 0
-        self.view_left = 0
-
-    def setup(self):
-        """ Set up the game and initialize the variables. """
-
-        # Sprite lists
-        self.player_list = arcade.SpriteList()
-        self.wall_list = arcade.SpriteList()
-
-        # Set up the player
-        self.score = 0
-        self.player_sprite = arcade.Sprite("torso.png", 0.2)
-        self.player_sprite.center_x = 64
-        self.player_sprite.center_y = 270
-        self.player_list.append(self.player_sprite)
-
-        # -- Set up several columns of walls
-        for x in range(200, 1650, 210):
-            for y in range(0, 1000, 64):
-                # Randomly skip a box so the player can find a way through
-                if random.randrange(5) > 0:
-                    wall = arcade.Sprite("circle.png", SPRITE_SCALING)
-                    wall.center_x = x
-                    wall.center_y = y
-                    self.wall_list.append(wall)
-
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
-
-        # Set the background color
+    def __init__(self):
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.sprite_list = None
         arcade.set_background_color(arcade.color.AMAZON)
 
-        # Set the viewport boundaries
-        # These numbers set where we have 'scrolled' to.
-        self.view_left = 0
-        self.view_bottom = 0
+
+    def setup(self):
+        self.sprite_list = arcade.SpriteList()
+
+        torso = BoxSprite("torso.png")
+        torso.center_x = 400
+        torso.center_y = 800
+        torso.x_vel = 0
+        torso.y_force = GRAVITY*torso.mass
+        torso.angle = 132
+
+        self.sprite_list.append(torso)
 
     def on_draw(self):
-        """
-        Render the screen.
-        """
-
-        # This command has to happen before we start drawing
         arcade.start_render()
-
-        # Draw all the sprites.
-        self.wall_list.draw()
-        self.player_list.draw()
-
-    def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed. """
-
-        if key == arcade.key.UP:
-            self.player_sprite.change_y = MOVEMENT_SPEED
-        elif key == arcade.key.DOWN:
-            self.player_sprite.change_y = -MOVEMENT_SPEED
-        elif key == arcade.key.LEFT:
-            self.player_sprite.change_x = -MOVEMENT_SPEED
-        elif key == arcade.key.RIGHT:
-            self.player_sprite.change_x = MOVEMENT_SPEED
-
-    def on_key_release(self, key, modifiers):
-        """Called when the user releases a key. """
-
-        if key == arcade.key.UP or key == arcade.key.DOWN:
-            self.player_sprite.change_y = 0
-        elif key == arcade.key.LEFT or key == arcade.key.RIGHT:
-            self.player_sprite.change_x = 0
+        self.sprite_list.draw()
 
     def update(self, delta_time):
-        """ Movement and game logic """
+        self.sprite_list.update()
 
-        # Call update on all sprites (The sprites don't do much in this
-        # example though.)
-        self.physics_engine.update()
-
-        # --- Manage Scrolling ---
-
-        # Track if we need to change the viewport
-
-        changed = False
-
-        # Scroll left
-        left_bndry = self.view_left + VIEWPORT_MARGIN
-        if self.player_sprite.left < left_bndry:
-            self.view_left -= left_bndry - self.player_sprite.left
-            changed = True
-
-        # Scroll right
-        right_bndry = self.view_left + SCREEN_WIDTH - VIEWPORT_MARGIN
-        if self.player_sprite.right > right_bndry:
-            self.view_left += self.player_sprite.right - right_bndry
-            changed = True
-
-        # Scroll up
-        top_bndry = self.view_bottom + SCREEN_HEIGHT - VIEWPORT_MARGIN
-        if self.player_sprite.top > top_bndry:
-            self.view_bottom += self.player_sprite.top - top_bndry
-            changed = True
-
-        # Scroll down
-        bottom_bndry = self.view_bottom + VIEWPORT_MARGIN
-        if self.player_sprite.bottom < bottom_bndry:
-            self.view_bottom -= bottom_bndry - self.player_sprite.bottom
-            changed = True
-
-        if changed:
-            arcade.set_viewport(self.view_left,
-                                SCREEN_WIDTH + self.view_left,
-                                self.view_bottom,
-                                SCREEN_HEIGHT + self.view_bottom)
+        for sprite in self.sprite_list:
+            if sprite.bottom <= 0:
+                sprite.y_force = 0
+                sprite.torque += sprite.mass * GRAVITY * sprite.length / 2 * math.cos(math.radians(sprite.angle))
+                #print(sprite.torque)
+                if sprite.angle < 91 and sprite.angle > 89:
+                    sprite.torque = 0
+                    sprite.angular_vel = 0
+                    sprite.angle = 90
+                if sprite.angle < 271 and sprite.angle > 269:
+                    sprite.torque = 0
+                    sprite.angular_vel = 0
+                    sprite.angle = 270
+            sprite.y_vel += sprite.y_force/sprite.mass
+            sprite.x_vel += sprite.x_force/sprite.mass
+            sprite.angular_vel -= sprite.torque/sprite.moment
+            #print(sprite.angular_vel)
+            #print(sprite.angle)
+            #print(sprite.torque)
+            #print("")
 
 
 def main():
-    """ Main method """
-    window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT)
-    window.setup()
+    game = MyGame()
+    #game.set_update_rate(1/6)
+    game.setup()
     arcade.run()
+
 
 if __name__ == "__main__":
     main()
